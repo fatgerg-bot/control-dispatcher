@@ -16,7 +16,7 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@drawable/ic_radio"
+        android:icon="@mipmap/ic_launcher"
         android:label="Control"
         android:theme="@android:style/Theme.Material.NoActionBar">
 

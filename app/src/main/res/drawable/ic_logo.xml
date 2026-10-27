@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Original Control badge: shield, Battenburg checks and radio waves. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="48" android:viewportHeight="48">
+    <group>
+        <path android:fillColor="#1A3A6B" android:pathData="M24,3 L41,9 V22 C41,33 33,41 24,45 C15,41 7,33 7,22 V9 Z" />
+        <group>
+            <clip-path android:pathData="M24,3 L41,9 V22 C41,33 33,41 24,45 C15,41 7,33 7,22 V9 Z" />
+            <path android:fillColor="#F5D000" android:pathData="M6,22h6v6h-6z M18,22h6v6h-6z M30,22h6v6h-6z M12,28h6v6h-6z M24,28h6v6h-6z M36,28h6v6h-6z" />
+            <path android:fillColor="#1D5FD8" android:pathData="M12,22h6v6h-6z M24,22h6v6h-6z M36,22h6v6h-6z M6,28h6v6h-6z M18,28h6v6h-6z M30,28h6v6h-6z" />
+        </group>
+        <path android:strokeColor="#F5B800" android:strokeWidth="1.6" android:fillColor="#00000000" android:pathData="M24,3 L41,9 V22 C41,33 33,41 24,45 C15,41 7,33 7,22 V9 Z" />
+        <path android:fillColor="#FFFFFF" android:pathData="M22.2,16 a1.8,1.8 0 1,0 3.6,0 a1.8,1.8 0 1,0 -3.6,0" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="1.4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M20,14 A4.5,4.5 0 0 1 28,14" />
+        <path android:strokeColor="#FFFFFF" android:strokeWidth="1.4" android:strokeLineCap="round" android:fillColor="#00000000" android:pathData="M17,12 A8,8 0 0 1 31,12" />
+    </group>
+</vector>
