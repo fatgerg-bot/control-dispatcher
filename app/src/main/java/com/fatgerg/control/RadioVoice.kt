@@ -45,10 +45,14 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
     fun britishVoices(): List<Voice> {
         val t = tts ?: return emptyList()
         return try {
-            t.voices.orEmpty()
+            val gb = t.voices.orEmpty()
                 .filter { it.locale.language == "en" && it.locale.country == "GB" }
                 .filter { !it.isNetworkConnectionRequired }
-                .sortedBy { it.name }
+            // Voices listed but not downloaded fall back to the default voice, so they all sound the same.
+            val installed = gb.filter {
+                !it.features.orEmpty().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)
+            }
+            installed.ifEmpty { gb }.sortedBy { it.name }
         } catch (_: Exception) {
             emptyList()
         }

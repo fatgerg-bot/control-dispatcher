@@ -324,6 +324,13 @@ class MainActivity : ComponentActivity() {
 
             Section("Control's voice")
             VoicePicker(voices, voice) { voice = it }
+            OutlinedButton(onClick = {
+                try {
+                    startActivity(Intent("com.android.settings.TTS_SETTINGS"))
+                } catch (_: Exception) {
+                    startActivity(Intent(AndroidSettings.ACTION_SETTINGS))
+                }
+            }, modifier = Modifier.fillMaxWidth()) { Text("Download more British voices") }
             Field("Speech speed (1.0 = normal)", rate, { rate = it }, number = true)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Bleep at the end of each transmission", color = Color.White, modifier = Modifier.weight(1f))
