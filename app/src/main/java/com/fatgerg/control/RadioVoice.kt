@@ -69,7 +69,8 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
         val rate = speech.second
         val lead = tone(rate, settings.leadInMs, 1000.0, 0.45f)
         val tail = ShortArray(rate * 150 / 1000)
-        play(lead + gain(speech.first) + tail, rate)
+        val beep = if (settings.endBeep) ShortArray(rate * 80 / 1000) + endBeep(rate) else ShortArray(0)
+        play(lead + gain(speech.first) + gain(beep) + tail, rate)
     }
 
     /** A steady tone for setting VOX sensitivity and audio levels. */
@@ -165,6 +166,10 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
                 (sin(2 * PI * freq * i / rate) * a * Short.MAX_VALUE).toInt().toShort()
             }
         }
+
+        /** The "bleep-bloop" at the end of a transmission: a high tone dropping to a lower one. */
+        fun endBeep(rate: Int): ShortArray =
+            tone(rate, 90, 1250.0, 0.4f) + ShortArray(rate * 15 / 1000) + tone(rate, 120, 850.0, 0.4f)
 
         /** Reads a 16-bit PCM WAV, mixing down to mono if needed. */
         fun readWav(bytes: ByteArray): Pair<ShortArray, Int>? {

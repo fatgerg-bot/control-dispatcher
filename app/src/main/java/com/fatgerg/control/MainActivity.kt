@@ -271,6 +271,7 @@ class MainActivity : ComponentActivity() {
         var trip by remember { mutableStateOf(settings.tripWords) }
         var alert by remember { mutableStateOf(settings.alertNumber) }
         var dnd by remember { mutableStateOf(settings.useDnd) }
+        var beep by remember { mutableStateOf(settings.endBeep) }
         var prompt by remember { mutableStateOf(settings.customPrompt.ifBlank { Prompt.DEFAULT }) }
         val voices by voiceNames
 
@@ -289,6 +290,7 @@ class MainActivity : ComponentActivity() {
             settings.tripWords = trip
             settings.alertNumber = alert
             settings.useDnd = dnd
+            settings.endBeep = beep
             settings.customPrompt = if (prompt.trim() == Prompt.DEFAULT.trim()) "" else prompt
             requestBasics()
             onBack()
@@ -322,6 +324,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
             Field("Speech speed (1.0 = normal)", rate, { rate = it }, number = true)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Bleep at the end of each transmission", color = Color.White, modifier = Modifier.weight(1f))
+                Switch(checked = beep, onCheckedChange = { beep = it })
+            }
 
             Section("Radio levels")
             Field("Talk threshold, 1-90 (green on the level meter)", threshold, { threshold = it }, number = true)

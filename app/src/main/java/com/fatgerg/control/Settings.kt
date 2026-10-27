@@ -65,6 +65,11 @@ class Settings(context: Context) {
         get() = prefs.getString("alert_number", "") ?: ""
         set(v) = prefs.edit().putString("alert_number", v.trim()).apply()
 
+    /** A short bleep-bloop after Control finishes speaking, like a real radio. */
+    var endBeep: Boolean
+        get() = prefs.getBoolean("end_beep", true)
+        set(v) = prefs.edit().putBoolean("end_beep", v).apply()
+
     var useDnd: Boolean
         get() = prefs.getBoolean("dnd", true)
         set(v) = prefs.edit().putBoolean("dnd", v).apply()
