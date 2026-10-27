@@ -77,7 +77,7 @@ private val Muted = Color(0xFF9FB0CC)
 class MainActivity : ComponentActivity() {
     private lateinit var settings: Settings
     private var voiceForList: RadioVoice? = null
-    private val voiceNames = mutableStateOf<List<String>>(emptyList())
+    private val voiceNames = mutableStateOf<List<Pair<String, String>>>(emptyList())
 
     private val askPermissions =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { }
@@ -122,7 +122,7 @@ class MainActivity : ComponentActivity() {
         val v = RadioVoice(this, settings).also { it.init() }
         voiceForList = v
         thread {
-            if (v.awaitReady()) voiceNames.value = v.britishVoices().map { it.name }
+            if (v.awaitReady()) voiceNames.value = v.labelledVoices()
         }
     }
 
@@ -330,7 +330,7 @@ class MainActivity : ComponentActivity() {
                 } catch (_: Exception) {
                     startActivity(Intent(AndroidSettings.ACTION_SETTINGS))
                 }
-            }, modifier = Modifier.fillMaxWidth()) { Text("Download more British voices") }
+            }, modifier = Modifier.fillMaxWidth()) { Text("Get more voices and accents") }
             Field("Speech speed (1.0 = normal)", rate, { rate = it }, number = true)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Bleep at the end of each transmission", color = Color.White, modifier = Modifier.weight(1f))
@@ -378,12 +378,11 @@ class MainActivity : ComponentActivity() {
 
     /** Drop-down list of the phone's British voices, with a button to hear the selected one. */
     @Composable
-    private fun VoicePicker(voices: List<String>, selected: String, onPick: (String) -> Unit) {
+    private fun VoicePicker(voices: List<Pair<String, String>>, selected: String, onPick: (String) -> Unit) {
         var open by remember { mutableStateOf(false) }
         fun label(name: String): String {
             if (name.isEmpty()) return "Automatic (first British voice)"
-            val i = voices.indexOf(name)
-            return if (i >= 0) "British voice ${i + 1}  ($name)" else name
+            return voices.firstOrNull { it.first == name }?.second ?: name
         }
         Text("Voice", color = Muted, fontSize = 12.sp)
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -399,9 +398,9 @@ class MainActivity : ComponentActivity() {
                         text = { Text(label("")) },
                         onClick = { onPick(""); open = false },
                     )
-                    voices.forEach { name ->
+                    voices.forEach { (name, lab) ->
                         DropdownMenuItem(
-                            text = { Text(label(name)) },
+                            text = { Text(lab) },
                             onClick = { onPick(name); open = false },
                         )
                     }

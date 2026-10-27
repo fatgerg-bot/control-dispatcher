@@ -42,27 +42,43 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
         return ok
     }
 
-    fun britishVoices(): List<Voice> {
+    /** Every downloaded English voice on the phone: British, Irish, Australian, Indian, American and so on. */
+    fun englishVoices(): List<Voice> {
         val t = tts ?: return emptyList()
         return try {
-            val gb = t.voices.orEmpty()
-                .filter { it.locale.language == "en" && it.locale.country == "GB" }
+            val en = t.voices.orEmpty()
+                .filter { it.locale.language == "en" }
                 .filter { !it.isNetworkConnectionRequired }
             // Voices listed but not downloaded fall back to the default voice, so they all sound the same.
-            val installed = gb.filter {
+            val installed = en.filter {
                 !it.features.orEmpty().contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED)
             }
-            installed.ifEmpty { gb }.sortedBy { it.name }
+            installed.ifEmpty { en }
+                .sortedWith(compareBy<Voice>({ countryOrder(it.locale.country) }, { it.name }))
         } catch (_: Exception) {
             emptyList()
         }
     }
 
+    /** Voices with friendly labels like "British 2" or "Irish 1", for the drop-down. */
+    fun labelledVoices(): List<Pair<String, String>> {
+        val counts = HashMap<String, Int>()
+        return englishVoices().map { v ->
+            val accent = accentName(v.locale.country)
+            val n = (counts[accent] ?: 0) + 1
+            counts[accent] = n
+            v.name to "$accent $n"
+        }
+    }
+
+    private fun britishVoices(): List<Voice> =
+        englishVoices().filter { it.locale.country == "GB" }
+
     fun applyVoice() {
         val t = tts ?: return
         t.setLanguage(Locale.UK)
         val wanted = settings.voiceName
-        val voice = britishVoices().firstOrNull { it.name == wanted } ?: britishVoices().firstOrNull()
+        val voice = englishVoices().firstOrNull { it.name == wanted } ?: britishVoices().firstOrNull()
         if (voice != null) t.setVoice(voice)
         t.setSpeechRate(settings.speechRate)
     }
@@ -71,7 +87,7 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
     fun preview(voiceName: String, text: String) {
         val t = tts ?: return
         t.setLanguage(Locale.UK)
-        val voice = britishVoices().firstOrNull { it.name == voiceName } ?: britishVoices().firstOrNull()
+        val voice = englishVoices().firstOrNull { it.name == voiceName } ?: britishVoices().firstOrNull()
         if (voice != null) t.setVoice(voice)
         t.setSpeechRate(settings.speechRate)
         t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "preview")
@@ -170,6 +186,18 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
     }
 
     companion object {
+        private val ACCENTS = listOf(
+            "GB" to "British", "IE" to "Irish", "AU" to "Australian", "NZ" to "New Zealand",
+            "IN" to "Indian", "ZA" to "South African", "NG" to "Nigerian", "CA" to "Canadian",
+            "US" to "American",
+        )
+
+        fun accentName(country: String): String =
+            ACCENTS.firstOrNull { it.first == country }?.second ?: "English ($country)"
+
+        fun countryOrder(country: String): Int =
+            ACCENTS.indexOfFirst { it.first == country }.let { if (it < 0) 99 else it }
+
         fun tone(rate: Int, millis: Int, freq: Double, amp: Float): ShortArray {
             val n = rate * millis / 1000
             val fade = rate / 100 // 10 ms fades stop clicks
