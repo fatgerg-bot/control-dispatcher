@@ -115,6 +115,10 @@ class ControlService : Service() {
                     if (!busy && !paused) ControlState.setStatus(Status.HEARING)
                 },
                 onOver = { samples -> scope.launch(worker) { handleOver(samples) } },
+                onDiscard = {
+                    // Too short to be an over (a click, a cough, a lone "over"): go back to listening.
+                    if (!busy && !paused && onShift) ControlState.setStatus(Status.LISTENING)
+                },
             ).also { it.start() }
             ControlState.setStatus(Status.LISTENING)
             think("[Start of shift]")

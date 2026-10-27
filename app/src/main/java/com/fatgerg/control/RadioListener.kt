@@ -17,6 +17,7 @@ class RadioListener(
     private val settings: Settings,
     private val onOverStarted: () -> Unit,
     private val onOver: (FloatArray) -> Unit,
+    private val onDiscard: () -> Unit = {},
 ) {
     @Volatile private var running = false
     @Volatile var muted = false
@@ -121,6 +122,8 @@ class RadioListener(
                 var i = 0
                 for (chunk in total) { chunk.copyInto(out, i); i += chunk.size }
                 onOver(out)
+            } else {
+                onDiscard()
             }
         }
     }
