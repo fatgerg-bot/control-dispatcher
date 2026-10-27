@@ -63,6 +63,16 @@ class RadioVoice(private val context: Context, private val settings: Settings) {
         t.setSpeechRate(settings.speechRate)
     }
 
+    /** Plays a sample of a voice straight away, for choosing one in Settings. */
+    fun preview(voiceName: String, text: String) {
+        val t = tts ?: return
+        t.setLanguage(Locale.UK)
+        val voice = britishVoices().firstOrNull { it.name == voiceName } ?: britishVoices().firstOrNull()
+        if (voice != null) t.setVoice(voice)
+        t.setSpeechRate(settings.speechRate)
+        t.speak(text, TextToSpeech.QUEUE_FLUSH, null, "preview")
+    }
+
     /** Speaks over the radio and returns once the audio has finished playing. */
     fun transmit(text: String) {
         val speech = synthesize(text) ?: return

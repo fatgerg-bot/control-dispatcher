@@ -33,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -313,16 +315,7 @@ class MainActivity : ComponentActivity() {
             Field("Town name", town, { town = it })
 
             Section("Control's voice")
-            Field("Voice name (blank = first British voice)", voice, { voice = it })
-            if (voices.isNotEmpty()) {
-                Text("Tap a British voice:", color = Muted, fontSize = 12.sp)
-                voices.forEach { name ->
-                    TextButton(onClick = { voice = name }) {
-                        Text(if (name == voice) "● $name" else name,
-                            color = if (name == voice) Amber else Color.White, fontSize = 13.sp)
-                    }
-                }
-            }
+            VoicePicker(voices, voice) { voice = it }
             Field("Speech speed (1.0 = normal)", rate, { rate = it }, number = true)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("Bleep at the end of each transmission", color = Color.White, modifier = Modifier.weight(1f))
@@ -366,6 +359,45 @@ class MainActivity : ComponentActivity() {
             TextButton(onClick = { prompt = Prompt.DEFAULT }) { Text("Reset to the built-in prompt") }
             Spacer(Modifier.height(40.dp))
         }
+    }
+
+    /** Drop-down list of the phone's British voices, with a button to hear the selected one. */
+    @Composable
+    private fun VoicePicker(voices: List<String>, selected: String, onPick: (String) -> Unit) {
+        var open by remember { mutableStateOf(false) }
+        fun label(name: String): String {
+            if (name.isEmpty()) return "Automatic (first British voice)"
+            val i = voices.indexOf(name)
+            return if (i >= 0) "British voice ${i + 1}  ($name)" else name
+        }
+        Text("Voice", color = Muted, fontSize = 12.sp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f)) {
+                OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        if (voices.isEmpty()) "Loading voices…" else label(selected) + "  ▾",
+                        color = Color.White, fontSize = 13.sp,
+                    )
+                }
+                DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                    DropdownMenuItem(
+                        text = { Text(label("")) },
+                        onClick = { onPick(""); open = false },
+                    )
+                    voices.forEach { name ->
+                        DropdownMenuItem(
+                            text = { Text(label(name)) },
+                            onClick = { onPick(name); open = false },
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.width(8.dp))
+            Button(onClick = {
+                voiceForList?.preview(selected, "Wolf One from Control, radio check, over.")
+            }) { Text("Hear it") }
+        }
+        Spacer(Modifier.height(4.dp))
     }
 
     @Composable
