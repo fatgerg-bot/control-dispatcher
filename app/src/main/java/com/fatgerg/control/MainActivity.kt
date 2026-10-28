@@ -57,6 +57,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -139,6 +141,8 @@ class MainActivity : ComponentActivity() {
         val level by ControlState.level.collectAsState()
         val log by ControlState.log.collectAsState()
         val route by ControlState.audioRoute.collectAsState()
+        val speaking by ControlState.speech.collectAsState()
+        val held by ControlState.pttHeld.collectAsState()
         var sayText by remember { mutableStateOf("") }
         val onShift = status != Status.OFF
         val listState = rememberLazyListState()
@@ -186,7 +190,7 @@ class MainActivity : ComponentActivity() {
                 LinearProgressIndicator(
                     progress = { level / 100f },
                     modifier = Modifier.fillMaxWidth().height(14.dp),
-                    color = if (level >= settings.talkThreshold) Green else Muted,
+                    color = if (speaking) Green else Muted,
                     trackColor = Card,
                 )
             }
@@ -225,6 +229,28 @@ class MainActivity : ComponentActivity() {
                 ) { Text("Stop now") }
             }
             Spacer(Modifier.height(8.dp))
+
+            if (onShift && (settings.holdToTalkOnly || route.startsWith("No cable"))) {
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .background(if (held) Green else Card, RoundedCornerShape(32.dp))
+                        .pointerInput(Unit) {
+                            detectTapGestures(onPress = {
+                                ControlState.setPtt(true)
+                                try { tryAwaitRelease() } finally { ControlState.setPtt(false) }
+                            })
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        if (held) "Talking… let go when done" else "Hold to talk",
+                        color = if (held) Navy else Amber, fontSize = 20.sp, fontWeight = FontWeight.Bold,
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+            }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
@@ -282,6 +308,7 @@ class MainActivity : ComponentActivity() {
         var alert by remember { mutableStateOf(settings.alertNumber) }
         var dnd by remember { mutableStateOf(settings.useDnd) }
         var beep by remember { mutableStateOf(settings.endBeep) }
+        var pttOnly by remember { mutableStateOf(settings.holdToTalkOnly) }
         var prompt by remember { mutableStateOf(settings.customPrompt.ifBlank { Prompt.DEFAULT }) }
         val voices by voiceNames
 
@@ -301,6 +328,7 @@ class MainActivity : ComponentActivity() {
             settings.alertNumber = alert
             settings.useDnd = dnd
             settings.endBeep = beep
+            settings.holdToTalkOnly = pttOnly
             settings.customPrompt = if (prompt.trim() == Prompt.DEFAULT.trim()) "" else prompt
             requestBasics()
             onBack()
@@ -338,7 +366,12 @@ class MainActivity : ComponentActivity() {
             }
 
             Section("Radio levels")
-            Field("Talk threshold, 1-90 (green on the level meter)", threshold, { threshold = it }, number = true)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Only listen while Hold to talk is pressed", color = Color.White, modifier = Modifier.weight(1f))
+                Switch(checked = pttOnly, onCheckedChange = { pttOnly = it })
+            }
+            Text("Handy for testing on the phone mic in a noisy room.", color = Muted, fontSize = 12.sp)
+            Field("Talk threshold, 1-90 (how loud before it counts)", threshold, { threshold = it }, number = true)
             Field("Quiet seconds that end an over", eoo, { eoo = it }, number = true)
             Field("Lead-in tone before Control speaks (ms)", leadIn, { leadIn = it }, number = true)
             Field("Output level into the radio, 10-100", outLevel, { outLevel = it }, number = true)

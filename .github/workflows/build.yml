@@ -60,6 +60,13 @@ jobs:
           done
           ls -lh app/src/main/assets/asr
 
+      - name: Download voice detector
+        run: |
+          mkdir -p app/src/main/assets/vad
+          curl -fsSL -o app/src/main/assets/vad/silero_vad.onnx \
+            https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx
+          ls -lh app/src/main/assets/vad
+
       - name: Build
         run: gradle --no-daemon assembleRelease
 

@@ -37,6 +37,17 @@ object ControlState {
     private val _audioRoute = MutableStateFlow("No cable detected")
     val audioRoute: StateFlow<String> = _audioRoute.asStateFlow()
 
+    /** True while the Hold to talk button is pressed. */
+    private val _pttHeld = MutableStateFlow(false)
+    val pttHeld: StateFlow<Boolean> = _pttHeld.asStateFlow()
+
+    /** True while the listener thinks someone is talking (drives the level meter colour). */
+    private val _speech = MutableStateFlow(false)
+    val speech: StateFlow<Boolean> = _speech.asStateFlow()
+
+    fun setPtt(held: Boolean) { _pttHeld.value = held }
+    fun setSpeech(v: Boolean) { if (_speech.value != v) _speech.value = v }
+
     fun setStatus(s: Status) { _status.value = s }
     fun setLevel(l: Int) { _level.value = l }
     fun setRoute(r: String) { _audioRoute.value = r }

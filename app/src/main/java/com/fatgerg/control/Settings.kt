@@ -70,6 +70,11 @@ class Settings(context: Context) {
         get() = prefs.getBoolean("end_beep", true)
         set(v) = prefs.edit().putBoolean("end_beep", v).apply()
 
+    /** Only listen while the Hold to talk button is pressed (for testing on the phone mic). */
+    var holdToTalkOnly: Boolean
+        get() = prefs.getBoolean("ptt_only", false)
+        set(v) = prefs.edit().putBoolean("ptt_only", v).apply()
+
     var useDnd: Boolean
         get() = prefs.getBoolean("dnd", true)
         set(v) = prefs.edit().putBoolean("dnd", v).apply()

@@ -12,6 +12,7 @@ secrets.properties
 # Downloaded by the GitHub build, not stored in the repo
 app/libs/
 app/src/main/assets/asr/
+app/src/main/assets/vad/
 
 # IDE
 .idea/
