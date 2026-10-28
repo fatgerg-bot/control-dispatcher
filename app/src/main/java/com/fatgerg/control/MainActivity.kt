@@ -165,6 +165,7 @@ class MainActivity : ComponentActivity() {
                 TextButton(onClick = onSettings) { Text("Settings", color = Muted) }
             }
             Text(route, color = Muted, fontSize = 13.sp)
+            Text("Jobs: " + Prompt.levelName(settings.jobLevel), color = Muted, fontSize = 13.sp)
             Spacer(Modifier.height(12.dp))
 
             // Status lamp
@@ -309,6 +310,7 @@ class MainActivity : ComponentActivity() {
         var dnd by remember { mutableStateOf(settings.useDnd) }
         var beep by remember { mutableStateOf(settings.endBeep) }
         var pttOnly by remember { mutableStateOf(settings.holdToTalkOnly) }
+        var level by remember { mutableStateOf(settings.jobLevel) }
         var prompt by remember { mutableStateOf(settings.customPrompt.ifBlank { Prompt.DEFAULT }) }
         val voices by voiceNames
 
@@ -329,6 +331,7 @@ class MainActivity : ComponentActivity() {
             settings.useDnd = dnd
             settings.endBeep = beep
             settings.holdToTalkOnly = pttOnly
+            settings.jobLevel = level
             settings.customPrompt = if (prompt.trim() == Prompt.DEFAULT.trim()) "" else prompt
             requestBasics()
             onBack()
@@ -349,6 +352,13 @@ class MainActivity : ComponentActivity() {
             Section("Officers and town")
             Field("One per line, e.g. Wolf One = Officer Wolf", officers, { officers = it }, lines = 4)
             Field("Town name", town, { town = it })
+
+            Section("Jobs")
+            LevelPicker(level) { level = it }
+            Text(
+                "Changes take effect on Control's next transmission.",
+                color = Muted, fontSize = 12.sp,
+            )
 
             Section("Control's voice")
             VoicePicker(voices, voice) { voice = it }
@@ -406,6 +416,22 @@ class MainActivity : ComponentActivity() {
             Field("Prompt", prompt, { prompt = it }, lines = 12)
             TextButton(onClick = { prompt = Prompt.DEFAULT }) { Text("Reset to the built-in prompt") }
             Spacer(Modifier.height(40.dp))
+        }
+    }
+
+    @Composable
+    private fun LevelPicker(selected: Int, onPick: (Int) -> Unit) {
+        var open by remember { mutableStateOf(false) }
+        Text("How grown-up the jobs are", color = Muted, fontSize = 12.sp)
+        Box(Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(Prompt.levelName(selected) + "  ▾", color = Color.White, fontSize = 14.sp)
+            }
+            DropdownMenu(expanded = open, onDismissRequest = { open = false }) {
+                Prompt.LEVELS.forEachIndexed { i, (name, _) ->
+                    DropdownMenuItem(text = { Text(name) }, onClick = { onPick(i); open = false })
+                }
+            }
         }
     }
 

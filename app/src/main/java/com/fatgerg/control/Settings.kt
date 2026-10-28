@@ -21,6 +21,11 @@ class Settings(context: Context) {
         get() = prefs.getString("officers", DEFAULT_OFFICERS) ?: DEFAULT_OFFICERS
         set(v) = prefs.edit().putString("officers", v).apply()
 
+    /** 0 = little ones, 1 = junior, 2 = teen, 3 = grown-ups. */
+    var jobLevel: Int
+        get() = prefs.getInt("job_level", 0)
+        set(v) = prefs.edit().putInt("job_level", v).apply()
+
     var town: String
         get() = prefs.getString("town", "Ashbrook") ?: "Ashbrook"
         set(v) = prefs.edit().putString("town", v.trim().ifEmpty { "Ashbrook" }).apply()
@@ -92,11 +97,17 @@ class Settings(context: Context) {
             Officer(parts[0].trim(), parts.getOrNull(1)?.trim().orEmpty())
         }
 
+    /**
+     * Trip words for the safety stop. From teen level up, jobs naturally include words like
+     * "bleeding" or "ambulance", so only first-person phrases ("I'm hurt") are used there.
+     */
     fun tripWordList(): List<String> = tripWords.split(",", "\n")
         .map { it.trim().lowercase() }
         .filter { it.isNotEmpty() }
+        .filter { jobLevel < 2 || it !in IN_GAME_WORDS }
 
     companion object {
+        val IN_GAME_WORDS = setOf("bleeding", "stranger", "a stranger", "call an ambulance", "i fell over", "i've fallen")
         const val DEFAULT_MODEL = "claude-haiku-5-5"
         const val DEFAULT_OFFICERS = "Wolf One"
         const val DEFAULT_TRIP_WORDS =
